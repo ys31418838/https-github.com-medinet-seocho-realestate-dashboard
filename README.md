@@ -1,133 +1,98 @@
-# vinext-starter
+<div align="center">
+  <img src="public/medinet-logo.png" width="128" alt="메디넷부동산 로고" />
 
-A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
+  # 메디넷부동산 서초구 부동산 대시보드
 
-## Prerequisites
+  **서초구 동별 아파트 실거래 흐름과 입지를 한눈에 보는 공인중개사 브리핑 도구**
 
-- Node.js `>=22.13.0`
-- Portable: Windows, macOS, or Linux; no Bash required
-- Managed Linux: managed Linux runtime with Bash, `flock`, `curl`, `sha256sum`, and GNU `timeout`
-- Git and `tar` (including Windows `tar.exe`) are required for publishing; portable publication does not require Bash
+  [▶ 대시보드 실행하기](https://medinet-seocho-realestate.curlysage4.chatgpt.site)
 
-## Sites Lifecycle
+  **메디넷부동산 · 010-843-7569**
+</div>
 
-The Sites initializer copies the shared starter and selects managed-linux only when `SITES_MANAGED_LINUX_CONTAINER=1`; otherwise it selects portable. It saves the selection only in ignored `.sites-runtime/execution-profile.json`. Both profiles copy/configure first, then use the plugin's separate `install-dependencies.mjs` step to measure installation independently. Edit source under `app/` and follow the Sites skill for installation, preview, builds, and publishing.
+---
 
-Run `node <plugin-root>/scripts/configure-execution-profile.mjs` only when the profile is unknown for the current checkout and environment. Profile changes do not alter tracked source or require reinstalling otherwise-valid dependencies; restart an existing preview to use the new selection. Do not commit or upload `.sites-runtime/`.
+## 프로젝트 소개
 
-This starter does not use `wrangler.jsonc`.
+일반 고객에게 서울시 서초구 부동산 시장을 쉽고 전문적으로 설명하기 위해 제작한 반응형 웹 대시보드입니다. 국토교통부 아파트 매매·전월세 실거래가 OpenAPI를 서버에서 호출하며, API 응답을 받을 수 없을 때는 `DEMO` 표시와 함께 예시 데이터를 제공합니다.
 
-Publish archives outside the source checkout or under its ignored `outputs/` directory. Local `.env*`, `.dev.vars*`, TypeScript build state, and tool runtime directories are ignored; keep the hosting manifest, migrations, and authored scripts in source control.
+## 주요 기능
 
-`install:ci` runs `npm ci` once against the shared lockfile, disables parent-workspace discovery, and includes required dev/optional dependencies despite production/omit settings. Sharp defaults to prebuilt binaries unless explicitly configured otherwise. Do not overlap installers.
+- 서초구 전체 및 법정동별 선택
+- 주간·월간 조회와 직접 날짜 범위 지정
+- 매매·전세·월세 아파트 거래량 TOP 10
+- 선택 아파트 위치 지도와 대표 실거래가 표시
+- 교통·학군·생활 상권·주변 개발계획 입지 분석
+- 급매·전세·월세·재건축/입주권 추천 매물 등록
+- 추천 매물 클릭 시 입지 분석 연동
+- 거래량, 평균 실거래가, 거래활력지수 요약
+- 모바일·태블릿·PC 반응형 화면
+- 공인중개사 고객 브리핑용 A4 인쇄 레이아웃
 
-- **Portable:** Preserve host HOME, npm cache, registry, proxy, temporary paths, retry/concurrency settings, and lifecycle-script policy. Use `--prefer-offline --no-audit --no-fund`.
-- **Managed Linux:** Use the existing project-local HOME/cache/tmp setup and Linux install lock, tarball preflight, and timeout. Restore the image-seeded npm cache only when its lockfile hash matches; retain network fallback. Builds keep their existing timeout. These helpers are not invoked by the portable profile.
+## 화면 구성
 
-`scripts/sites-env.mjs` preserves the caller's HOME, npm cache, proxy, XDG, and temporary-directory configuration while defaulting Wrangler and Miniflare state to the checkout. If npm reports an unwritable cache, select a writable path with `npm_config_cache` for that install. The `dev` and `start` scripts also keep Wrangler logs inside the checkout. Generated `.sites-runtime/` and `.wrangler/` directories are disposable and ignored by Git.
+1. 시장 요약 및 조회 조건
+2. 주요 시장 지표
+3. 아파트 거래량 TOP 10과 지도
+4. 선택 단지 실거래가 및 입지 분석
+5. 메디넷 추천 매물
+6. 상담 및 인쇄 영역
 
-On portable, `npm run dev` uses `vinext dev` with HMR, starting at port 5173. Vinext records the running server in ignored `.vinext/` state, rejects an ordinary duplicate launch, and recovers stale state after a stopped process; exactly simultaneous starts can race. Pass `--port <port>` or `--hostname <host>` after `npm run dev --` when needed; keep portable previews on loopback.
+## 데이터 출처
 
-For managed Linux browser QA, follow the Sites skill's managed preview reference. The daemon runs the project's Vite dev script with `--host 0.0.0.0 --port 4173 --strictPort`; use the CLI's returned URL. The ignored local profile survives the daemon's cleared environment.
+- 국토교통부 아파트 매매 실거래가 자료
+- 국토교통부 아파트 전월세 실거래가 자료
+- OpenStreetMap 지도
 
-The portable profile simulates ChatGPT sign-in only for loopback development requests. Visit `/signin-with-chatgpt?return_to=/` to sign in as `local_seedy` (`seedy@sites.test`, display name `Seedy`) and `/signout-with-chatgpt?return_to=/` to sign out. The development cookie preserves that identity across server restarts. Mock auth is disabled in the managed-linux profile and is not included in production builds; hosted authentication remains dispatch-owned.
+공공데이터 API 키는 저장소에 포함하지 않습니다. 배포 환경에 `PUBLIC_DATA_API_KEY` 비밀 환경변수로 설정해야 합니다.
 
-The Worker uses `vinext/server/fetch-handler`, including Vinext's config-aware image handling. After building, `npm start` runs that Worker locally through Wrangler on `127.0.0.1`, sharing `.wrangler/state` with dev preview and local D1 migrations; it does not deploy the site or simulate sign-in. Use the URL printed by the server. Pass `npm start -- --port <port>` to select a different built-preview port.
+## 로컬 실행
 
-Local previews use Miniflare's placeholder `Request.cf` metadata without a network lookup. Set `CLOUDFLARE_CF_FETCH_ENABLED=true` to opt into fetching preview metadata; this setting does not change hosted request metadata.
+### 요구 사항
 
-Local tool usage metrics are disabled by default. Set `WRANGLER_SEND_METRICS=true` to opt in.
+- Node.js 22.13 이상
+- npm
 
-## Included Shape
+### 설치 및 실행
 
-- edit site code under `app/`
-- `app/chatgpt-auth.ts` provides optional dispatch-owned ChatGPT sign-in helpers
-- `.openai/hosting.json` declares optional Sites D1 and R2 bindings
-- `vite.config.ts` simulates declared bindings for local development
-- `worker/index.ts` is the production Worker entrypoint and preserves request-scoped connector bindings
-- `scripts/vite/` contains the maintained Vite integrations and the vendored Sites plugin license
-- `scripts/connector-preview/` contains the local connector preview Worker and session helpers
-- the remaining `scripts/` files select execution profiles and run installation, development, and builds; the plugin's helpers orchestrate the Sites lifecycle
-- `dist/` contains generated deployment output; `.vinext/`, `.wrangler/`, and `.sites-runtime/` contain ignored local tool state
-- `db/index.ts` reads the D1 binding from the Cloudflare Worker environment
-- `db/schema.ts` starts intentionally empty
-- `@cloudflare/workers-types` provides Worker types; `cloudflare-env.d.ts` declares optional `DB`/`BUCKET` bindings—update these declarations if binding names change
-- `examples/d1/` contains an optional D1 example surface
-- `drizzle.config.ts` supports local migration generation when needed
-
-## Workspace Auth Headers
-
-Signed-in visitors receive both `oai-authenticated-user-id` and `oai-authenticated-user-email`. Private Sites require every visitor to sign in; public Sites may also have anonymous visitors, for whom neither header is present.
-
-The user ID is stable for the same user on the same Site and different across Sites. Use it as the durable user key; use email and name for display or contact purposes.
-
-SIWC-authenticated workspace sites may also receive `oai-authenticated-user-full-name` when the user's SIWC profile has a non-empty `name` claim. The full-name value is percent-encoded UTF-8 and is accompanied by `oai-authenticated-user-full-name-encoding: percent-encoded-utf-8`.
-
-Treat the full name as optional and fall back to email when it is absent:
-
-```tsx
-import { headers } from "next/headers";
-
-export default async function Home() {
-  const requestHeaders = await headers();
-  const userId = requestHeaders.get("oai-authenticated-user-id");
-  const email = requestHeaders.get("oai-authenticated-user-email");
-  const encodedFullName = requestHeaders.get("oai-authenticated-user-full-name");
-  const fullName =
-    encodedFullName &&
-    requestHeaders.get("oai-authenticated-user-full-name-encoding") ===
-      "percent-encoded-utf-8"
-      ? decodeURIComponent(encodedFullName)
-      : null;
-
-  const displayName = fullName ?? email;
-  // ...
-}
+```bash
+npm install
+npm run dev
 ```
 
-## Optional Dispatch-Owned ChatGPT Sign-In
+브라우저에서 `http://127.0.0.1:5173`을 엽니다.
 
-Import the ready-to-use helpers from `app/chatgpt-auth.ts` when the site needs optional or required ChatGPT sign-in:
+### 환경변수
 
-- Use `getChatGPTUser()` for optional signed-in UI.
-- Use the returned `userId` as the stable user key for user-owned records; do not use email as a durable identifier.
-- Use `requireChatGPTUser(returnTo)` for server-rendered pages that should send anonymous visitors through Sign in with ChatGPT.
-- In a Server Component, start sign-in with `<a href={chatGPTSignInPath(returnTo)} target="_top">`. The auth helper module is server-only; do not import it into a Client Component.
-- Do not use `fetch`, XHR, a client-side router, or a framework link that can prefetch the sign-in route. SIWC must start as a top-level navigation.
-- Never request the AuthAPI authorization endpoint directly. The dispatch-owned `/signin-with-chatgpt` route must start the SIWC flow.
-- Use `chatGPTSignOutPath(returnTo)` for browser sign-out links or actions.
-- Pass a same-origin relative `returnTo` path for the destination after sign-in or sign-out. The helper validates and safely encodes it.
-- Mark protected pages with `export const dynamic = "force-dynamic"` because they depend on per-request identity headers.
+`.env.local` 파일을 만들고 공공데이터포털 인증키를 설정합니다.
 
-Dispatch owns `/signin-with-chatgpt`, `/signout-with-chatgpt`, `/callback`, the OAuth cookies, and identity header injection. Do not implement app routes for those reserved paths. Routes that do not import and call the helper remain anonymous-compatible.
-
-SIWC establishes identity only; it does not prove workspace membership. Use the Sites hosting platform's access policy controls for workspace-wide restrictions, or enforce explicit server-side membership or allowlist checks.
-
-Use SIWC for account pages, user-specific dashboards, saved records, and write actions tied to the current ChatGPT user. Leave public content anonymous.
-
-## Local D1 migrations
-
-For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
-
-```sh
-node --import ./scripts/sites-env.mjs ./node_modules/wrangler/bin/wrangler.js d1 execute DB --local --config dist/server/wrangler.json --persist-to .wrangler/state --file drizzle/0000_example.sql
+```env
+PUBLIC_DATA_API_KEY=발급받은_공공데이터_API_키
 ```
 
-Replace the filename with the pending migration and `DB` with your D1 binding name if different. Use `.wrangler/state`, not `.wrangler/state/v3`; Wrangler adds the versioned directories. Do not replay migrations already applied locally. This updates only the preview database; publishing applies production migrations separately.
+환경변수 파일과 실제 API 키는 Git에 커밋하지 마세요.
 
-## Diagnostic Commands
+## 프로덕션 빌드
 
-- `npm run install:ci`: perform the one locked dependency install
-- `npm run dev`: start the Vite/Vinext development server
-- `npm run build`: build the deployable Sites artifact
-- `npm run start`: preview the built Worker locally with D1/R2 support
-- `npm run db:generate`: generate Drizzle migrations after schema changes
+```bash
+npm run build
+npm run start
+```
 
-When using the Sites plugin, follow its skill instructions for installation, builds, and publishing. These npm commands remain available for standalone use.
+이 프로젝트는 Vinext와 Cloudflare Worker 런타임을 사용합니다. 서버 API 경로가 포함되어 있으므로 정적 GitHub Pages만으로는 공공데이터 API 기능을 실행할 수 없습니다.
 
-The portable build runs Vinext directly without a host `timeout` command. The managed-linux build uses `scripts/build-verified.sh` and its existing `SITES_BUILD_TIMEOUT` setting.
+## 주요 기술
 
-## Learn More
+- Next.js / React / TypeScript
+- Vinext / Cloudflare Workers
+- Tailwind CSS
+- Leaflet / OpenStreetMap
+- Lucide Icons
 
-- [vinext Documentation](https://github.com/cloudflare/vinext)
-- [Drizzle D1 Guide](https://orm.drizzle.team/docs/get-started/d1-new)
+## 안내
+
+본 대시보드는 정보 제공 및 고객 브리핑용입니다. 실제 계약 판단 전 등기, 권리관계, 학교 배정, 도시계획, 개발사업 진행 단계를 별도로 확인해야 합니다.
+
+---
+
+© 2026 메디넷부동산 · Tel. 010-843-7569
